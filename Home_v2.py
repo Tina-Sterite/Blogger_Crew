@@ -27,7 +27,7 @@ from langchain_openai import ChatOpenAI
 from src.components.navigation import page_config, custom_style, footer
 
 # Setting up Llama3 via Ollama server @http://localhost:11434/v1 
-os.environ["OPENAI_API_KEY"] = "NA"
+os.environ["OPEN_API_KEY"] = "NA"
 
 llm = ChatOpenAI(
     model="llama3",

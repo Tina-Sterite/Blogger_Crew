@@ -27,13 +27,14 @@ from langchain_openai import ChatOpenAI
 from src.components.navigation import page_config, custom_style, footer
 
 # Setting up Llama3 via Ollama server @http://localhost:11434/v1 
-os.environ["OPENAI_API_KEY"] = "NA"
+os.environ["OPEN_API_KEY"] = "NA"
 
 llm = ChatOpenAI(
     model="llama3",
     base_url="http://localhost:11434/v1"
 )
 
+# Initialize the DuckDuckGo search tool
 search_tool = DuckDuckGoSearchRun()
 
 class CustomHandler(BaseCallbackHandler):
@@ -68,7 +69,7 @@ class BlogCrew:
             backstory="""You work at a leading tech think tank. Your expertise lies in identifying emerging trends. You have a knack for dissecting complex data and presenting actionable insights.""",
             verbose=True,
             allow_delegation=False,
-            tools=[search_tool],
+            tools=[search_tool],  # Added search_tool here
             llm=llm
         )
 
