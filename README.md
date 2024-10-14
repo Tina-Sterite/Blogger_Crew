@@ -1,3 +1,6 @@
+## 10/14/2024: Update to remove unnecessary files, modify code in Home.py to remove errors
+
+
 # BloggerCrew - Current Topic Blogs Writer with Llama3 via Ollama, Groq and CrewAI
 ## Overview
 
