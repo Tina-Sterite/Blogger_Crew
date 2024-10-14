@@ -20,6 +20,7 @@ from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.messages import HumanMessage
 from langchain_community.tools import DuckDuckGoSearchRun
 from fpdf import FPDF
+import time
 
 #from BlogCrewAI import Agent, Task, Crew, Process
 from crewai import Agent, Task, Crew, Process
@@ -34,11 +35,12 @@ llm = ChatGroq(
     #     temperature=0,
          model="llama3-70b-8192",
         api_key=os.getenv('GROQ_API_KEY')
+)
 
 # llm = ChatOpenAI(
 #     model="llama3",
 #     base_url="http://localhost:11434/v1"
- )
+# )
 
 # Initialize the DuckDuckGo search tool
 search_tool = DuckDuckGoSearchRun()
@@ -75,7 +77,7 @@ class BlogCrew:
             backstory="""You work at a leading tech think tank. Your expertise lies in identifying emerging trends. You have a knack for dissecting complex data and presenting actionable insights.""",
             verbose=True,
             allow_delegation=False,
-            tools=[search_tool],  # Added search_tool here
+            tools=[search_tool],
             llm=llm
         )
 

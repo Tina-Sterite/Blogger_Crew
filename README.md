@@ -3,6 +3,11 @@
 
 BloggerCrew is an innovative tool designed to streamline the process of writing topical blog content using advanced AI technologies. By leveraging Llama3 through platforms like Ollama, Groq, and CrewAI, BloggerCrew offers a seamless experience in generating high-quality blog posts efficiently.
 
+## TO DO:
+##    give the PDF file a new name with each run - {topic}_{datetimestamp}.pdf
+##    where {topic} is derived from input prompt i.e."best fertilizer to grow tomatoes"
+
+
 ## Features
 
 - **AI-Powered Content Creation**: Utilizes Llama3's capabilities to generate relevant and engaging blog content.
