@@ -1,7 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-
+# TO_BE_DELETED folder
+TO_BE_DELETED/
+# Result Files
+Result_Files/
 # C extensions
 *.so
 test/

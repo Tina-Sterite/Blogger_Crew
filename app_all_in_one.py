@@ -1,40 +1,31 @@
-##© 2024 Tushar Aggarwal. All rights reserved.(https://tushar-aggarwal.com)
-##BloggerCrew -Live Session with Tushar
-##################################################################################################
 # Importing dependencies
-#import BlogCrewAI
-#from BlogCrewAI import Agent, Task, Crew, Process
-from langchain_openai import ChatOpenAI
-# Importing dependencies
+
+from langchain_groq import ChatGroq
 import os
-import logging
 import streamlit as st
 from pathlib import Path
-import base64
-import sys
-import warnings
 from dotenv import load_dotenv
 from typing import Any, Dict
 from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.messages import HumanMessage
 from langchain_community.tools import DuckDuckGoSearchRun
 from fpdf import FPDF
-
-#from BlogCrewAI import Agent, Task, Crew, Process
+import time
 from crewai import Agent, Task, Crew, Process
-from langchain_openai import ChatOpenAI
-
 from src.components.navigation import page_config, custom_style, footer
+from datetime import datetime
 
-# Setting up Llama3 via Ollama server @http://localhost:11434/v1 
-os.environ["OPENAI_API_KEY"] = "NA"
+USER_AGENT = os.getenv("USER_AGENT")
 
-llm = ChatOpenAI(
-    model="llama3",
-    base_url="http://localhost:11434/v1"
+llm = ChatGroq(
+        model="llama3-70b-8192",
+        api_key=os.getenv('GROQ_API_KEY')
 )
 
+# Initialize the DuckDuckGo search tool
 search_tool = DuckDuckGoSearchRun()
+
+# Initialize the cache
+search_cache = {}
 
 class CustomHandler(BaseCallbackHandler):
     def __init__(self, agent_name: str) -> None:
@@ -53,10 +44,9 @@ class CustomHandler(BaseCallbackHandler):
         st.session_state.messages.append({"role": self.agent_name, "content": outputs['output']})
         st.chat_message(self.agent_name).write(outputs['output'])
 
-
 class BlogCrew:
-    def __init__(self, topic: str, content_type: str):
-        self.topic = topic
+    def __init__(self, blog_topic: str, content_type: str):
+        self.topic = blog_topic
         self.content_type = content_type
         self.output_placeholder = st.empty()
 
@@ -102,21 +92,43 @@ class BlogCrew:
             verbose=2
         )
 
-        # Get the crew to work
-        result = crew.kickoff()
-        self.output_placeholder.markdown(result)
+        # Check the cache before running the search
+        cache_key = f"{self.topic}_{self.content_type}"
+        if cache_key in search_cache:
+            result = search_cache[cache_key]
+        else:
+            # Get the crew to work
+            result = self.kickoff_with_retry(crew)
+            search_cache[cache_key] = result
 
+        self.output_placeholder.markdown(result)
+        result_str = str(result)
+        
+        # Create the Result_Files directory if it doesn't exist
+        result_dir = Path("Result_Files")
+        result_dir.mkdir(exist_ok=True)
+
+        # Generate the timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        # Define file names
+        txt_file = str(result_dir / f"{self.topic}_{timestamp}.txt")
+        pdf_file = str(result_dir / f"{self.topic}_{timestamp}.pdf")
+
+        # Write the result to a text file
+        with open(txt_file, "w") as file:
+            file.write(result_str)
         # Create a PDF and write the output to it
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
 
-        for line in result.split("\n"):
+        for line in result_str.split("\n"):
+            line = line.encode('latin-1', 'replace').decode('latin-1')
             pdf.write(5, line)
             pdf.ln()  # move to next line
 
         # Save the PDF file
-        pdf_file = "blog.pdf"
         pdf.output(pdf_file)
 
         with open(pdf_file, 'rb') as file:
@@ -129,17 +141,27 @@ class BlogCrew:
             file_name=pdf_file,
             mime="application/pdf"
         )
-
         return result
 
+    def kickoff_with_retry(self, crew, retries=3, delay=100):
+        for attempt in range(retries):
+            try:
+                return crew.kickoff()
+            except Exception as e:
+                if "Ratelimit" in str(e):
+                    st.warning(f"Rate limit encountered. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    raise e
+        raise Exception("Failed to complete the task after several retries due to rate limiting.")
 
 def main():
     # Streamlit Page Setup
-    page_config("Pixella", "🤖", "wide") 
+    page_config("Crew Agents",":writing_hand:", "wide") 
     custom_style()
     st.sidebar.image('./src/logo.png')
 
-    st.title("🤖Pixella🤖")
+    st.title("✍️Crew Agents✍️")
     st.markdown(
         '''
         <style>
